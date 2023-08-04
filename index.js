@@ -7,7 +7,7 @@ Options will be
 2. view all roles
 3. view all employees
 4. add a department 
-5.add a role
+5  add a role
 6. add an employee
 7. update an employee role
 
@@ -86,136 +86,111 @@ function displayMenu()
           else if(userChoice == "Add Employee")
           {
               console.log("Please add an employee!");
-              inquirer.prompt([
-                {
-                    type: "input",
-                    name: "firstName",
-                    message: "Please enter employee first name!"
-                },
-                {
-                    type: "input",
-                    name: "lastName",
-                    message: "Please enter employee last name!"
-                },
-                {
-                    type: "list",
-                    name: "roleID",
-                    message: "Please select employee role!",
-                    choices:["Sales Lead", "Lead Engineer", "Software Engineer", "Lawyer", "Accountant"],
-                },
-                {
-                    type: "list",
-                    name: "managerID",
-                    message: "Please select a manager!",
-                    choices:["Lebron James", "Clive Rosfield"],
-                },
-              ])
-              .then((employeeAnswer) =>{
-                const firstName = employeeAnswer.firstName;
-                const lastName = employeeAnswer.lastName;
-                const userRoleChoice = employeeAnswer.roleID;
-                const userManagerChoice = employeeAnswer.managerID;
-
-                let idNumberAssigned;
-                let managerAssigned;
-
-
-                if(userRoleChoice == "Sales Lead")
-                {
-                    idNumberAssigned = 1;
-                }
-                else if(userRoleChoice == "Lead Engineer")
-                {
-                    idNumberAssigned = 2;
-                }
-                else if(userRoleChoice == "Software Engineer")
-                {
-                    idNumberAssigned = 3;
-                }
-                else if(userRoleChoice == "Lawyer")
-                {
-                    idNumberAssigned = 4;
-                }
-                else if(userRoleChoice == "Accountant")
-                {
-                    idNumberAssigned = 5;
-                }
-
-                if(userManagerChoice == "Lebron James")
-                {
-                    managerAssigned = 1;
-                }
-                else if(userManagerChoice == "Clive Rosfield")
-                {
-                    managerAssigned = 4;
-                }
-
-
-                console.log("Employee First Name: " + firstName);
-                console.log("Employee Last Name: " + lastName);
-                const addEmployeeInformation = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
-
-                connection.query(
-                    addEmployeeInformation,[firstName, lastName, idNumberAssigned, managerAssigned], 
-                    function (err, insertResult)
+              connection.query('Select * from roles', (err, data) => {
+                const roleList = data.map((role) => ({
+                    name: `${role.title}`,
+                    value: role.id
+                }))
+                inquirer.prompt([
                     {
-                        if (err) throw err;
-                        console.log("Employee added successfully!");
-                        displayMenu();
+                        type: "input",
+                        name: "firstName",
+                        message: "Please enter employee first name!"
+                    },
+                    {
+                        type: "input",
+                        name: "lastName",
+                        message: "Please enter employee last name!"
+                    },
+                    {
+                        type: "list",
+                        name: "roleID",
+                        message: "Please select employee role!",
+                        choices: roleList
+                    },
+                    {
+                        type: "list",
+                        name: "managerID",
+                        message: "Please select a manager!",
+                        choices:["Lebron James", "Clive Rosfield"],
+                    },
+                  ])
+                  .then((employeeAnswer) =>{
+                    const firstName = employeeAnswer.firstName;
+                    const lastName = employeeAnswer.lastName;
+                    const userRoleChoice = employeeAnswer.roleID;
+                    const userManagerChoice = employeeAnswer.managerID;
+    
+                    if(userManagerChoice == "Lebron James")
+                    {
+                        managerAssigned = 1;
                     }
-                )
+                    else if(userManagerChoice == "Clive Rosfield")
+                    {
+                        managerAssigned = 4;
+                    }
+    
+    
+                    console.log("Employee First Name: " + firstName);
+                    console.log("Employee Last Name: " + lastName);
+                    const addEmployeeInformation = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+    
+                    connection.query(
+                        addEmployeeInformation,[firstName, lastName, userRoleChoice, managerAssigned], 
+                        function (err, insertResult)
+                        {
+                            if (err) throw err;
+                            console.log("Employee added successfully!");
+                            displayMenu();
+                        }
+                    )
+                  })
               })
           }
-      
-          else if (userChoice == "Update Employee Role") {
-            console.log("You chose the update employee route");
-        
-            inquirer.prompt([
-                {
-                    type: "list",
-                    name: "employee",
-                    message: "Please select an employee!",
-                    choices: ["Lebron James", "Joey Lee", "Bobby Portis", "Clive Rosfield", "Torgal WOOF"]
-                },
-                {
-                    type: "list",
-                    name: "role",
-                    message: "Please select role!",
-                    choices: ["Sales Lead", "Lead Engineer", "Software Engineer", "Lawyer", "Accountant"]
-                }
-            ])
-            .then((updateAnswer) => {
-                const selectedEmployee = updateAnswer.employee;
-                const selectedRole = updateAnswer.role;
-        
-                let idNumberAssigned;
-        
-                if (selectedRole == "Sales Lead") {
-                    idNumberAssigned = 1;
-                } else if (selectedRole == "Lead Engineer") {
-                    idNumberAssigned = 2;
-                } else if (selectedRole == "Software Engineer") {
-                    idNumberAssigned = 3;
-                } else if (selectedRole == "Lawyer") {
-                    idNumberAssigned = 4;
-                } else if (selectedRole == "Accountant") {
-                    idNumberAssigned = 5;
-                }
-        
-                const updateEmployeeInformation = `
-                    UPDATE employees
-                    SET role_id = ?
-                    WHERE CONCAT(first_name, ' ', last_name) = ?;
-                `;
-        
-                connection.query(updateEmployeeInformation, [idNumberAssigned, selectedEmployee], function (err, updateResult) {
-                    if (err) throw err;
-                    console.log("Employee role updated successfully!");
-                    displayMenu();
-                });
-            });
-        }
-      
+          else if (userChoice == "Update Employee Role") 
+          {
+              console.log("You chose the update employee route");
+              connection.query(`Select * from employees`, (err, data) => {
+                  const employeeList = data.map((emp) => ({
+                      name: `${emp.first_name} ${emp.last_name}`,
+                      value: emp.id
+                  }))
+                  connection.query(`Select * from roles`, (err, data) => {
+                      const roleList = data.map((role) => ({
+                          name: `${role.title}`,
+                          value: role.id
+                      }))
+                      inquirer.prompt([
+                          {
+                              type: "list",
+                              name: "employee",
+                              message: "Please select an employee!",
+                              choices: employeeList
+                          },
+                          {
+                              type: "list",
+                              name: "role",
+                              message: "Please select role!",
+                              choices: roleList
+                          }
+                      ])
+                      .then((updateAnswer) => {
+                          selectedEmployee = updateAnswer.employee;
+                          selectedRole = updateAnswer.role;
+                          const updateEmployee = 
+                          `UPDATE employees
+                          SET role_id = ?
+                          WHERE id= ?`;
+                  
+                          connection.query(updateEmployee, [selectedRole, selectedEmployee], function (err, updateResult) {
+                              if (err) throw err;
+                              console.log("Employee role updated successfully!");
+                              displayMenu();
+                          });
+                      });
+                  });
+              });  
+          }             
           else if(userChoice == "View all Roles")
             {
                 console.log("Please see all the roles information.");
@@ -236,47 +211,46 @@ function displayMenu()
       
             else if(userChoice == "Add Role") {
                 console.log("Please add a role.");
-                inquirer.prompt([
-                    {
-                        type: "input",
-                        name: "roleTitle",
-                        message: "Please add a new role."
-                    },
-                    {
-                        type: "number",
-                        name: "salary",
-                        message: "Please add a salary."
-                    },
-                    {
-                        type: "list",
-                        name: "department",
-                        choices: ["Sales", "Engineering", "Finance", "Legal"]
-                    },
-                    ])
-                  .then((employeeAnswer) => {
-                    const roleTitle = employeeAnswer.roleTitle;
-                    const salary = employeeAnswer.salary;
-                    const department = employeeAnswer.department;
-                    if (department === "Sales") {
-                      idDepartment = 1;
-                    } else if (department === "Engineering") {
-                      idDepartment = 2;
-                    } else if (department === "Finance") {
-                      idDepartment = 3;
-                    } else if (department === "Legal") {
-                      idDepartment = 4;
-                    }
-                    const addRole = `INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`;
-                    connection.query(
-                        addRole,[roleTitle, salary, idDepartment],
-                        function (err, insertResult)
+                connection.query(`Select * from department`, (err, data) => {
+                    const deptList = data.map((dept) => ({
+                        name: `${dept.department_name}`,
+                        value: dept.id
+                    }))
+
+                    inquirer.prompt([
                         {
-                          if (err) throw err;
-                          console.log(" New role added successfully!");
-                          displayMenu();
-                        }
-                    )
-                  })
+                            type: "input",
+                            name: "roleTitle",
+                            message: "Please add a new role."
+                        },
+                        {
+                            type: "number",
+                            name: "salary",
+                            message: "Please add a salary."
+                        },
+                        {
+                            type: "list",
+                            name: "department",
+                            choices: deptList
+                        },
+                        ])
+                      .then((employeeAnswer) => {
+                        const roleTitle = employeeAnswer.roleTitle;
+                        const salary = employeeAnswer.salary;
+                        const department = employeeAnswer.department;
+                        const addRole = `INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`;
+                        connection.query(
+                            addRole,[roleTitle, salary, department],
+                            function (err, insertResult)
+                            {
+                              if (err) throw err;
+                              console.log(" New role added successfully!");
+                              displayMenu();
+                            }
+                        )
+                      })
+                })
+                
                 }
       
           else if(userChoice == "View All Departments")
@@ -327,6 +301,5 @@ function displayMenu()
       })
       
 }
-
 displayMenu();
 

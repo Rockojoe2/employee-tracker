@@ -9,3 +9,6 @@ FROM employees
 JOIN roles ON employees.role_id = roles.id
 JOIN department ON roles.department_id = department.id
 LEFT JOIN employees AS managers ON employees.manager_id = managers.id;
+
+
+SELECT * FROM company_db.department;
