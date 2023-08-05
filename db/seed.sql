@@ -1,3 +1,5 @@
+-- Starter information that we added
+
 INSERT INTO department (department_name)
     VALUES
     1.("Sales"),
@@ -21,5 +23,3 @@ INSERT INTO roles (title, salary, department_id)
     ("Bobby", "Portis", 3, 1),
     ("Clive", "Rosfield", 4, null),
     ("Torgal", "WOOF", 4, 4);
-
- 
