@@ -41,6 +41,7 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 // const connection = require('./db/connection');
 
+//Connection 
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -48,23 +49,27 @@ const connection = mysql.createConnection({
     database: 'company_db',
   });
 
+//Function to display menu, made it a function in order to do recursive function and call the function again inside the function at the very end of every if/else in order to keep the menu going.
 function displayMenu()
 {
     inquirer.prompt([
         {
-          name: 'homescreen',
+          //List of choices user can choose from when function starts.  
+          name: 'homeScreen',
           type: 'list',
           message: 'What would you like to do?',
           choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View all Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
         },
       ])
       .then((answers) =>{
-          var userChoice = answers.homescreen;
+        //We have different if statements depending on what option the user chose.
+          var userChoice = answers.homeScreen;
       
           console.log("This is my user choice " + userChoice);
       
           if(userChoice == "View All Employees")
             {
+                //View all employee option that has a query that pulls up all the employees
                 console.log("Please see all the Employees.");
                     const viewAllEmployeesQuery = `
                     SELECT employees.id AS id, employees.first_name AS first_name, employees.last_name AS last_name, roles.title AS title, department.department_name AS department, roles.salary AS salary, CONCAT(managers.first_name, " ", managers.last_name) AS manager
@@ -85,7 +90,9 @@ function displayMenu()
       
           else if(userChoice == "Add Employee")
           {
+            //Add employee route that will add a new employee to the table. 
               console.log("Please add an employee!");
+              //Needed to make choices dynamic, so that the roleList is updated whenever we add new roles
               connection.query('Select * from roles', (err, data) => {
                 const roleList = data.map((role) => ({
                     name: `${role.title}`,
@@ -149,6 +156,7 @@ function displayMenu()
           }
           else if (userChoice == "Update Employee Role") 
           {
+            //The update employee role. We need a connection.query for both employee and role because those can be updated whenever we add a new employee or role
               console.log("You chose the update employee route");
               connection.query(`Select * from employees`, (err, data) => {
                   const employeeList = data.map((emp) => ({
@@ -194,6 +202,7 @@ function displayMenu()
           else if(userChoice == "View all Roles")
             {
                 console.log("Please see all the roles information.");
+                    //Query that views all the roles that are available.
                     const viewAllEmployeesQuery = `
                     SELECT roles.id AS id, roles.title AS title, department.department_name AS department, roles.salary AS salary
                     FROM department
@@ -210,6 +219,7 @@ function displayMenu()
             }       
       
             else if(userChoice == "Add Role") {
+                //Adding a new role to the database
                 console.log("Please add a role.");
                 connection.query(`Select * from department`, (err, data) => {
                     const deptList = data.map((dept) => ({
@@ -255,6 +265,7 @@ function displayMenu()
       
           else if(userChoice == "View All Departments")
             {
+                //Query to view all the departments
                 console.log("Please see all the Departments.");
                     const viewAllEmployeesQuery = `
                     SELECT * FROM company_db.department;
@@ -269,6 +280,7 @@ function displayMenu()
                 
             }      
             else if(userChoice == "Add Department") {
+                //Adding a new department
                 console.log("Please add a department.");
                 inquirer.prompt([
                     {
@@ -294,6 +306,7 @@ function displayMenu()
 
           else if(userChoice == "Quit")
           {
+            //Making the program end. This is the only if/else statement where we don't call the function again
               console.log("You chose the quit route");
               return;
           }
